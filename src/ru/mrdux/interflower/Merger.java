@@ -8,7 +8,6 @@ public class Merger<O> {
     private List<O> objects;
     private Options options;
 
-
     public Merger(Options options, List<O> objects) {
         this.options = options;
         this.objects = objects;
@@ -60,31 +59,6 @@ public class Merger<O> {
 
             }
         }
-
-
-        /*for (Field field : fields) {
-            Comparator<?> compName = mergeFields.get(field);
-            System.out.println();
-            System.out.println(field.getName() + ": " + (compName != null));
-            if (compName != null) System.out.println("Comparator: " + compName.toString());
-        }
-        /*for (Map.Entry<String, Comparator> e : mergeFields) {
-
-            /*String name = field.getName();
-            System.out.println("\nName: " + name);
-            Class type = field.getType();
-            System.out.println("Type: " + type.getSimpleName());
-            MergeField[] mergeNames = field.getAnnotationsByType(MergeField.class);
-            for (MergeField mn : mergeNames) {
-                System.out.println("    {");
-                System.out.println("        Annotate name: " + mn.annotationType().getSimpleName());
-                System.out.println("        handlerName: " + mn.handlerName());
-                System.out.println("    }");
-            }
-            Object o = new Object();
-            //System.out.println(field.get);
-        }*/
-
         return container;
     }
 
@@ -139,7 +113,6 @@ public class Merger<O> {
                 if (customComp != null) return customComp;
             }
         }
-
         return getOptionsComparator();
     }
 
