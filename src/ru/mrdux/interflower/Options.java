@@ -38,6 +38,7 @@ public class Options {
     }
 
     public enum OptionType {
+        DO_NOTHING,
         FIRST_RECORDED,
         LAST_RECORDED,
     }

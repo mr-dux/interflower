@@ -120,6 +120,8 @@ public class Merger<O> {
         switch (options.getType()) {
             case LAST_RECORDED:
                 return Comparators.lastRecordedComparator;
+            case DO_NOTHING:
+                return Comparators.doNothingComparator;
         }
         return Comparators.firstRecordedComparator;
     }
