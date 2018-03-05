@@ -9,19 +9,19 @@ public class Options {
     private Map<String, Comparator<?>> customHandlers;
     private Map<String, Comparator<?>> fieldHandlers;
     private Map<Class<?>, Comparator<?>> classHandlers;
-    private OptionType type;
+    private Type type;
 
     {
         customHandlers = new HashMap<>();
         fieldHandlers = new HashMap<>();
         classHandlers = new HashMap<>();
-        type = OptionType.FIRST_RECORDED;
+        type = Type.FIRST_RECORDED;
     }
 
     public Options() {
     }
 
-    public Options(OptionType type) {
+    public Options(Type type) {
         this.type = type;
     }
 
@@ -37,13 +37,13 @@ public class Options {
         fieldHandlers.put(fieldName, comparator);
     }
 
-    public enum OptionType {
+    public enum Type {
         DO_NOTHING,
         FIRST_RECORDED,
         LAST_RECORDED,
     }
 
-    public OptionType getType() {
+    public Type getType() {
         return type;
     }
 
