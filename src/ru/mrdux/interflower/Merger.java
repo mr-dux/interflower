@@ -26,15 +26,14 @@ public class Merger<O> {
     }
 
     public O getResult() {
-        O container = objects.get(0);
-        return getResult(container);
+        return getResult(objects.get(0));
     }
 
-    public O getResult(O container) {
+    public <T extends O> T getResult(T container) {
 
         if (objects.size() <= 1) return container;
 
-        Class clazz = container.getClass();
+        Class clazz = objects.get(0).getClass();
         Field[] fields = clazz.getDeclaredFields();
         Merge classAnnotation = (Merge) clazz.getAnnotation(Merge.class);
 
@@ -49,8 +48,8 @@ public class Merger<O> {
                     field.setAccessible(true);
                     Comparator c = e.getValue();
                     Object mergeValue = field.get(mergeObj);
-                    int rewriteField = c.compare(field.get(container),mergeValue);
-                    if (rewriteField > 0){
+                    int rewriteField = c.compare(field.get(container), mergeValue);
+                    if (rewriteField > 0) {
                         field.set(container, mergeValue);
                     }
                 } catch (IllegalAccessException e1) {
@@ -122,8 +121,9 @@ public class Merger<O> {
                 return Comparators.lastRecordedComparator;
             case DO_NOTHING:
                 return Comparators.doNothingComparator;
+            default:
+                return Comparators.firstRecordedComparator;
         }
-        return Comparators.firstRecordedComparator;
     }
 
 }
