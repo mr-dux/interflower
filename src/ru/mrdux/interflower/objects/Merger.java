@@ -1,7 +1,16 @@
-package ru.mrdux.interflower;
+package ru.mrdux.interflower.objects;
 
 import java.lang.reflect.Field;
 import java.util.*;
+
+import ru.mrdux.interflower.objects.MergeHandler.Action;
+
+/* TODO
+* 1. Handlers                   √
+* 2. CollectionMerger           √
+* 3. PrimitiveHandler
+* 4. Primitive normal merge
+* */
 
 public class Merger<O> {
 
@@ -37,38 +46,37 @@ public class Merger<O> {
         Field[] fields = clazz.getDeclaredFields();
         Merge classAnnotation = (Merge) clazz.getAnnotation(Merge.class);
 
-        Map<Field, Comparator<?>> mergeFields = fieldsAnalyze(fields, classAnnotation);
+        Map<Field, MergeHandler> mergeFields = fieldsAnalyze(fields, classAnnotation);
         if (mergeFields.isEmpty()) return container;
 
         for (int i = 0; i < objects.size(); i++) {
             O mergeObj = objects.get(i);
-            for (Map.Entry<Field, Comparator<?>> e : mergeFields.entrySet()) {
+            for (Map.Entry<Field, MergeHandler> e : mergeFields.entrySet()) {
                 try {
                     Field field = e.getKey();
                     field.setAccessible(true);
-                    Comparator c = e.getValue();
+                    MergeHandler handler = e.getValue();
                     Object mergeValue = field.get(mergeObj);
-                    int rewriteField = c.compare(field.get(container), mergeValue);
-                    if (rewriteField > 0) {
+                    Action action = handler.compare(field.get(container), mergeValue);
+                    if (action == Action.OVERWRITE) {
                         field.set(container, mergeValue);
                     }
                 } catch (IllegalAccessException e1) {
                     e1.printStackTrace();
                 }
-
             }
         }
         return container;
     }
 
-    private Map<Field, Comparator<?>> fieldsAnalyze(Field[] fields, Merge classAnnotate) {
-        Map<Field, Comparator<?>> analyze = new HashMap<Field, Comparator<?>>();
+    private Map<Field, MergeHandler> fieldsAnalyze(Field[] fields, Merge classAnnotate) {
+        Map<Field, MergeHandler> analyze = new HashMap<>();
 
         for (Field field : fields) {
             boolean merge = isFieldMerge(field, classAnnotate);
             if (!merge) continue;
-            Comparator<?> comparator = getComparator(field, classAnnotate);
-            analyze.put(field, comparator);
+            MergeHandler handler = getComparator(field, classAnnotate);
+            analyze.put(field, handler);
         }
         return analyze;
     }
@@ -87,42 +95,42 @@ public class Merger<O> {
         return !isIgnore && (mergeFields.isEmpty() || isInMergeList);
     }
 
-    private Comparator<?> getComparator(Field field, Merge classAnnotate) {
+    private MergeHandler getComparator(Field field, Merge classAnnotate) {
         MergeField mergeField = field.getAnnotation(MergeField.class);
         if (mergeField != null) {
             String handler = mergeField.handlerName();
             if (!handler.isEmpty()) {
-                Comparator<?> customComp = options.getCustomHandlers().get(handler);
+                MergeHandler customComp = options.getCustomHandlers().get(handler);
                 if (customComp != null) return customComp;
             }
         }
 
         String name = field.getName();
-        Comparator<?> nameComp = options.getFieldHandlers().get(name);
+        MergeHandler nameComp = options.getFieldHandlers().get(name);
         if (nameComp != null) return nameComp;
 
         Class type = field.getType();
-        Comparator<?> typeComp = options.getClassHandlers().get(type);
+        MergeHandler typeComp = options.getClassHandlers().get(type);
         if (typeComp != null) return typeComp;
 
         if (classAnnotate != null) {
             String handler = classAnnotate.handlerName();
             if (!handler.isEmpty()) {
-                Comparator<?> customComp = options.getCustomHandlers().get(handler);
+                MergeHandler customComp = options.getCustomHandlers().get(handler);
                 if (customComp != null) return customComp;
             }
         }
         return getOptionsComparator();
     }
 
-    private Comparator<Object> getOptionsComparator() {
+    private MergeHandler getOptionsComparator() {
         switch (options.getType()) {
             case LAST_RECORDED:
-                return Comparators.lastRecordedComparator;
+                return Handlers.lastRecordedHandler;
             case DO_NOTHING:
-                return Comparators.doNothingComparator;
+                return Handlers.doNothingHandler;
             default:
-                return Comparators.firstRecordedComparator;
+                return Handlers.firstRecordedHandler;
         }
     }
 

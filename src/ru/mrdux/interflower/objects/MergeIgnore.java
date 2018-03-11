@@ -1,4 +1,4 @@
-package ru.mrdux.interflower;
+package ru.mrdux.interflower.objects;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
